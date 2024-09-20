@@ -2,7 +2,7 @@
 
 import { parseArgs } from "util";
 import { resolve } from "path";
-import { mkdir, exists, writeFile } from "node:fs/promises";
+import { mkdir, exists, writeFile, readFile, rm } from "node:fs/promises";
 
 type Options = {
   type: "daily" | "titled";
@@ -38,6 +38,10 @@ function getNotePath(note: Options): string {
   return resolve(note.dnDir, note.date, note.fileName);
 }
 
+async function readNote(note: Options): Promise<string> {
+  return readFile(getNotePath(note), "utf8");
+}
+
 async function createDirectoryIfNotExists(path: string) {
   return mkdir(path, { recursive: true });
 }
@@ -51,11 +55,10 @@ title: ${options.title}
 # ${options.title}
 
 ## TODO
-- [ ] 
+
+- [ ]
 
 ## Notes
-
-
 `;
 }
 
@@ -161,6 +164,15 @@ async function initNote(options: Options) {
   }
 }
 
+async function cleanupNote(options: Options) {
+  const defaultContent = defaultNoteContent(options);
+  const noteContent = await readNote(options);
+  const hasChanges = defaultContent !== noteContent;
+  if (!hasChanges) {
+    await rm(getNotePath(options));
+  }
+}
+
 async function openEditor(options: Options) {
   const childProcess = Bun.spawn({
     cmd: [options.editor, getNotePath(options)],
@@ -176,6 +188,7 @@ async function main() {
     const options = await getOptions();
     await initNote(options);
     await openEditor(options);
+    await cleanupNote(options);
   } catch (error) {
     if (error instanceof Error) {
       console.error("[!] ", error.message);

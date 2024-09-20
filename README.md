@@ -1,4 +1,4 @@
-# DN (Daily Note)
+# dn (daily note)
 
 Dead simple daily notes in your existing editor.
 
@@ -14,13 +14,14 @@ dn [options] [title]
 
 `--dir` The directory to store the daily notes. _Defaults to $DN_DIR environment variable_
 
-`--editor` The editor to use when creating a new note. Defaults to $DN_EDITOR then $EDITOR environment variables.
+`--editor` The editor to use when creating a new note. _Defaults to $DN_EDITOR then $EDITOR environment variables_
 
 `--help` Print this help message
 
 #### [title]
 
 The title of the note.
+
 _Defaults to the current date in YYYY-MM-DD format which serves as a general daily note._
 
 ### Open Today's Daily Note
@@ -49,7 +50,7 @@ dn --day=2 customer call
 
 ## Todo
 
-- [ ] Only keep files if they contain changes from the default note template
 - [ ] Ability to recall specific days (`--day last monday`, or `--day=YYYY-MM-DD`)
 - [ ] Ability to browse/choose which note to open from the target day (`dn --choose`)
 - [ ] Ability to search/grep notes and choose which match to open (`dn --search=some search term`)
+- [ ] Ability to carry forward unfinished tasks from previous day to new daily note (`dn --carry`, maybe default?)

@@ -1,17 +1,14 @@
 {
   "name": "dn",
   "module": "index.ts",
-  "type": "module",
-  "bin": {
-    "dn": "index.ts"
-  },
   "devDependencies": {
     "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
-  "dependencies": {
-    "bun-promptx": "^0.2.0"
-  }
+  "bin": {
+    "dn": "index.ts"
+  },
+  "type": "module"
 }
