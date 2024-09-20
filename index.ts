@@ -95,10 +95,14 @@ async function getOptions(): Promise<Options> {
     allowPositionals: true,
   });
   if (!values.editor) {
-    throw new Error("No editor specified. $EDITOR or $DN_EDITOR must be set.");
+    throw new Error(
+      "No editor specified. Provide via --editor argument or by setting either an $DN_EDITOR or $EDITOR environment variable.",
+    );
   }
   if (!values.dir) {
-    throw new Error("No directory specified. $DN_DIR must be set.");
+    throw new Error(
+      "No notes directory specified. Provide via --dir argument or by setting the $DN_DIR environment variable.",
+    );
   }
 
   await createDirectoryIfNotExists(values.dir);
@@ -140,9 +144,16 @@ async function openEditor(options: Options) {
 }
 
 async function main() {
-  const options = await getOptions();
-  await initNote(options);
-  await openEditor(options);
+  try {
+    const options = await getOptions();
+    await initNote(options);
+    await openEditor(options);
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error("[!] ", error.message);
+    }
+    process.exit(1);
+  }
 }
 
 main();
