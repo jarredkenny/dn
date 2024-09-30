@@ -1,15 +1,38 @@
 #! /usr/bin/env bun
 
 import { getOptions, type Options } from "./options";
-import { resolveNote, cleanupNote, initNote, getNotePath } from "./note";
+import {
+  resolveNote,
+  cleanupNote,
+  initNote,
+  getNotePath,
+  searchNotes,
+  chooseAndEditSearchResult,
+} from "./note";
 import { openEditor } from "./editor";
 import { chooseAndEditTodo, getUnfinishedTodos, printTodos } from "./todo";
 
 async function handleNoteMode(options: Options) {
-  const note = resolveNote(options);
-  await initNote(options, note);
-  await openEditor(options, getNotePath(options, note));
-  await cleanupNote(options, note);
+  if (options.search) {
+    const results = await searchNotes(options, options.search);
+    if (options.choose) {
+      await chooseAndEditSearchResult(options, results);
+    } else {
+      console.table(
+        results.map((result) => ({
+          File: result.note.fileName,
+          Line: result.line,
+          Match: result.match,
+        })),
+      );
+    }
+    return;
+  } else {
+    const note = resolveNote(options);
+    await initNote(options, note);
+    await openEditor(options, getNotePath(options, note));
+    await cleanupNote(options, note);
+  }
 }
 
 async function handleTodosMode(options: Options) {

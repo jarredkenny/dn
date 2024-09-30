@@ -11,6 +11,9 @@ import {
 
 import { type Options } from "./options";
 import { slugify, titleCase } from "./string";
+import { parseFrontmatter } from "./markdown";
+import { choose } from "./choose";
+import { openEditor } from "./editor";
 
 export type Note = {
   type: "titled" | "daily";
@@ -25,7 +28,20 @@ async function isEmptyDir(path: string): Promise<boolean> {
 }
 
 export function getNotePath(options: Options, note: Note): string {
-  return resolve(options.dnDir, options.day, note.fileName);
+  return resolve(options.dnDir, note.day, note.fileName);
+}
+
+export async function getNote(path: string): Promise<Note> {
+  const [day, fileName] = path.split("/").slice(-2);
+  const content = await readFile(path, "utf8");
+  const frontmatter = parseFrontmatter<Note>(content);
+  const note: Note = {
+    day,
+    type: frontmatter.type ?? "daily",
+    title: frontmatter.title ?? "",
+    fileName,
+  };
+  return note;
 }
 
 export async function readNote(options: Options, note: Note): Promise<string> {
@@ -100,4 +116,53 @@ export async function cleanupNote(options: Options, note: Note) {
   if (await isEmptyDir(resolve(options.dnDir, note.day))) {
     await rmdir(resolve(options.dnDir, note.day));
   }
+}
+
+type SearchResult = {
+  note: Note;
+  line: number;
+  match: string;
+};
+
+export async function searchNotes(
+  options: Options,
+  query: string,
+): Promise<SearchResult[]> {
+  const cmd = ["grep", "-Rin", query, options.dnDir];
+  const grep = Bun.spawnSync(cmd);
+  const results = await Promise.all(
+    grep.stdout
+      .toString()
+      .split("\n")
+      .filter(Boolean)
+      .map((line) => {
+        const [path, lineNumber, content] = line.split(":");
+        return { path, lineNumber, match: content };
+      })
+      .map(({ path, lineNumber, match }) =>
+        getNote(path).then((note) => ({
+          note,
+          line: parseInt(lineNumber),
+          match,
+        })),
+      ),
+  );
+  return results;
+}
+
+export async function chooseAndEditSearchResult(
+  options: Options,
+  results: SearchResult[],
+): Promise<void> {
+  const choice = choose(
+    results.map((result) => ({
+      ...result,
+      label: `${result.note.fileName.replace(".md", "")}:${result.line} - ${result.match}`,
+      description: "",
+    })),
+  );
+  if (!choice) {
+    return;
+  }
+  openEditor(options, getNotePath(options, choice.note), choice.line);
 }

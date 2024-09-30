@@ -7,6 +7,7 @@ export type Options = {
   mode: RunMode;
   day: string;
   choose: boolean;
+  search?: string;
   editor: string;
   dnDir: string;
   argString: string;
@@ -49,6 +50,9 @@ export async function getOptions(): Promise<Options> {
         type: "boolean",
         default: false,
       },
+      search: {
+        type: "string",
+      },
       dir: {
         type: "string",
         default: Bun.env.DN_DIR,
@@ -85,6 +89,7 @@ export async function getOptions(): Promise<Options> {
     day,
     argString: positionals.slice(2).join(" ").trim(),
     editor: values.editor,
+    search: values.search,
     dnDir: values.dir,
     choose: !!values.choose,
   };

@@ -51,6 +51,4 @@ dn --day=2 customer call
 ## Todo
 
 - [ ] Ability to recall specific days (`--day last monday`, or `--day=YYYY-MM-DD`)
-- [ ] Ability to browse/choose which note to open from the target day (`dn --choose`)
-- [ ] Ability to search/grep notes and choose which match to open (`dn --search=some search term`)
 - [ ] Ability to carry forward unfinished tasks from previous day to new daily note (`dn --carry`, maybe default?)
