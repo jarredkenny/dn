@@ -1,49 +1,23 @@
 #! /usr/bin/env bun
 
-import { relative, dirname, basename } from "path";
-
 import { getOptions, type Options } from "./options";
-import { cleanupNote, initNote } from "./note";
+import { resolveNote, cleanupNote, initNote, getNotePath } from "./note";
 import { openEditor } from "./editor";
-import { getUnfinishedTodos } from "./todo";
-import { choose } from "./choose";
+import { chooseAndEditTodo, getUnfinishedTodos, printTodos } from "./todo";
 
 async function handleNoteMode(options: Options) {
-  await initNote(options);
-  await openEditor(options);
-  await cleanupNote(options);
+  const note = resolveNote(options);
+  await initNote(options, note);
+  await openEditor(options, getNotePath(options, note));
+  await cleanupNote(options, note);
 }
 
 async function handleTodosMode(options: Options) {
   const todos = getUnfinishedTodos(options);
   if (!options.choose) {
-    console.log(
-      todos
-        .map(({ content }) => content)
-        .map((line) => line.replace("- [ ] ", "").trim())
-        .filter(Boolean)
-        .join("\n"),
-    );
+    printTodos(options, todos);
   } else {
-    const choice = choose(
-      todos.map((result) => ({
-        ...result,
-        label: result.content,
-        description: result.path,
-      })),
-    );
-    if (!choice) {
-      return;
-    }
-    const relativePath = relative(options.dnDir, choice.path);
-    const noteDir = dirname(relativePath);
-    const fileName = basename(relativePath);
-    const note: Options = {
-      ...options,
-      noteDir,
-      fileName,
-    };
-    await openEditor(note);
+    chooseAndEditTodo(options, todos);
   }
 }
 

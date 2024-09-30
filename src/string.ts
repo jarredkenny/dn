@@ -4,3 +4,10 @@ export function slugify(str: string): string {
     .replace(/[^\w ]+/g, "")
     .replace(/ +/g, "-");
 }
+
+export function titleCase(str: string): string {
+  return str.replace(
+    /\w\S*/g,
+    (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase(),
+  );
+}

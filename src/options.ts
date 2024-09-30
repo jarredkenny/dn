@@ -1,21 +1,15 @@
-import { mkdir } from "node:fs/promises";
-import { resolve } from "path";
 import { parseArgs } from "util";
 import { addDays, formatDate } from "./date";
-import { slugify } from "./string";
 
 type RunMode = "note" | "todos";
 
 export type Options = {
   mode: RunMode;
-  type: "daily" | "titled";
-  title: string;
-  fileName: string;
-  date: string;
+  day: string;
+  choose: boolean;
   editor: string;
   dnDir: string;
-  noteDir: string;
-  choose: boolean;
+  argString: string;
 };
 
 function printUsageAndExit() {
@@ -84,22 +78,13 @@ export async function getOptions(): Promise<Options> {
     );
   }
 
-  mkdir(values.dir, { recursive: true });
-
-  const date = formatDate(addDays(new Date(), parseInt(values.day ?? "0")));
-  const titleArg = positionals.slice(2).join(" ").trim();
-  const title = titleArg.length > 0 ? titleArg : date;
-  const fileName =
-    titleArg.length > 0 ? `${date}-${slugify(titleArg)}.md` : `${date}.md`;
+  const day = formatDate(addDays(new Date(), parseInt(values.day ?? "0")));
 
   return {
     mode: values.todos ? "todos" : "note",
-    type: titleArg.length > 0 ? "titled" : "daily",
-    title,
-    date,
-    fileName,
+    day,
+    argString: positionals.slice(2).join(" ").trim(),
     editor: values.editor,
-    noteDir: resolve(values.dir, date),
     dnDir: values.dir,
     choose: !!values.choose,
   };
